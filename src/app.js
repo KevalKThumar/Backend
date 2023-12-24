@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import userRouter from './routes/user.routes.js';
 const app = express();
 
 // config cors middleware
@@ -37,10 +38,18 @@ app.use(cookieParser())
 
 
 
+// router
 
 
-
+app.use('/api/v1/users',userRouter)
 
 
 
 export { app }
+
+
+
+
+// url : uniform resource locator
+// uri : uniform resource identifier
+// urn : uniform resource name

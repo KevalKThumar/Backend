@@ -6,9 +6,11 @@ const storage = multer.diskStorage({
         cb(null, "./public/test")
     },
     filename: function (req, file, cb) {
-        // here we can change the file name to make it unique for each user or post 
-        cb(null, file.originalname)
+        // here we can change the file name to make it unique for each user or post
+
+
+        cb(null, file.originalname + '_' + Date.now())
     }
 })
 
-const upload = multer({ storage, })
+ export const upload = multer({ storage, })
