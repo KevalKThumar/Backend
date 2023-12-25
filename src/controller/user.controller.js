@@ -17,32 +17,30 @@ const registerUser = asyncHandler(async (req, res) => {
 
     const { username, email, password, fullname } = req.body;
 
-    console.log(req.body);
-
     if (
         [username, email, password, fullname].some((field) => field.trim() === "")
     ) {
-        throw new ApiError("All fields are required", 400);
+        throw new ApiError(400, "All fields are required");
     }
 
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
 
     if (existingUser) {
-        throw new ApiError("User already exists with this email or username", 409);
+        throw new ApiError(409,"User already exists with this email or username")
     }
 
     const avatarImageLocakPath = req.files?.avatar[0]?.path;
     const coverImageLocakPath = req.files?.coverimage[0]?.path;
 
     if (!avatarImageLocakPath) {
-        throw new ApiError("Avatar image is required", 400);
+        throw new ApiError(400, "Avatar image is required");
     }
 
     const avatar = await uploadOnCloudinary(avatarImageLocakPath);
     const coverimage = await uploadOnCloudinary(coverImageLocakPath);
 
     if (!avatar) {
-        throw new ApiError("Error while uploading avatar on cloudinary", 500);
+        throw new ApiError(500, "Error while uploading avatar image");
     }
 
     const user = await User.create({
@@ -59,12 +57,12 @@ const registerUser = asyncHandler(async (req, res) => {
     );
 
     if (!checkUser) {
-        throw new ApiError("Error while creating user", 500);
+        throw new ApiError(500, "Error while creating user");
     }
 
     await user.save();
 
-    return res.status(201).json(ApiResponce(200, "User created", checkUser));
+    return res.status(201).json(new ApiResponce(200, "User created", checkUser));
 });
 
 const loginUser = asyncHandler(async (req, res) => {
