@@ -40,7 +40,7 @@ app.use(cookieParser())
 
 // router
 
-
+app.get('/', (req, res) => { res.send('hello world') })
 app.use('/api/v1/users',userRouter)
 
 
