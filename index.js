@@ -2,8 +2,8 @@
 // databse is always in other continates
 // must use async await
 import dotenv from 'dotenv';
-import connectDB from "./DB/index.js";
-import { app } from './app.js';
+import connectDB from './src/DB/index.js'
+import { app } from './src/app.js'
 
 
 dotenv.config({
@@ -41,6 +41,10 @@ connectDB()
 
 /*
 import { DB_NAME } from './constants';
+import connectDB from './src/DB/index';
+import connectDB from './src/DB/index';
+import connectDB from './src/DB/index';
+import connectDB from './src/DB/index';
 
 
     ; (async () => {
