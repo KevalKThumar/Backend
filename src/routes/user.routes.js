@@ -18,7 +18,7 @@ router.route('/register').post(
     ]),
     registerUser
 )
-router.route('/login').get(loginUser)
+router.route('/login').post(loginUser)
 
 
 
