@@ -66,10 +66,35 @@ const registerUser = asyncHandler(async (req, res) => {
 });
 
 const loginUser = asyncHandler(async (req, res) => {
-    res.status(200).json({
-        success: true,
-        message: "Login User",
-    });
+
+    const { email, password } = req.body;
+
+    if ([email, password].some((field) => field.trim() === "")) {
+        throw new ApiError(400, "All fields are required");
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    const isPasswordCorrect = await user.isPasswordCorrect(password);
+
+    if (!isPasswordCorrect) {
+        throw new ApiError(400, "Incorrect password");
+    }
+
+    const checkUser = await User.findById(user._id).select(
+        "-password -refreshToken"
+
+    )
+
+    if (!checkUser) {
+        throw new ApiError(500, "Error while creating user");
+    }
+
+    return res.status(200).json(new ApiResponce(200, "User logged in", checkUser));
 });
 
 
