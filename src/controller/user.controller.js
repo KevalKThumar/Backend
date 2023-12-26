@@ -1,3 +1,4 @@
+import { Test } from "../model/test.model.js";
 import { User } from "../model/user.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponce } from "../utils/ApiResponce.js";
@@ -9,8 +10,8 @@ const registerUser = asyncHandler(async (req, res) => {
        *    step 1: get the data from the request body and store it in a variable
             step 2: check if data is not empty
             step 3: check if the user is already present in the database or not with email or username
-            step 4: if user is not present then create a new user       
-            step 5: send the response in success with status code 200 
+            step 4: if user is not present then create a new user
+            step 5: send the response in success with status code 200
             step 6: catch the error
             step 7: send the response in catch part
        */
@@ -65,37 +66,45 @@ const registerUser = asyncHandler(async (req, res) => {
     return res.status(201).json(new ApiResponce(200, "User created", checkUser));
 });
 
+
+
 const loginUser = asyncHandler(async (req, res) => {
+    const { username, email, password, fullname } = req.body;
 
-    const { email, password } = req.body;
-
-    // if ([email, password].some((field) => field.trim() === "")) {
-    //     throw new ApiError(400, "All fields are required");
-    // }
-    
-    const user = await User.findOne({email});
-
-    if (!user) {
-        throw new ApiError(404, "User not found");
+    if (
+        [username, email, password, fullname].some((field) => field.trim() === "")
+    ) {
+        throw new ApiError(400, "All fields are required");
     }
 
-    const isPasswordCorrect = await user.isPasswordCorrect(password);
+    const existingUser = await Test.findOne({ $or: [{ email }, { username }] });
 
-    if (!isPasswordCorrect) {
-        throw new ApiError(400, "Incorrect password");
+    if (existingUser) {
+        throw new ApiError(409, "User already exists with this email or username")
     }
 
-    const checkUser = await User.findById(user._id).select(
+
+    const user = await Test.create({
+        username: username.toLowerCase(),
+        email,
+        password,
+        fullname,
+    });
+
+    const checkUser = await Test.findById(user._id).select(
         "-password -refreshToken"
-
-    )
+    );
 
     if (!checkUser) {
         throw new ApiError(500, "Error while creating user");
     }
 
-    return res.status(200).json(new ApiResponce(200, "User logged in", checkUser));
+    await user.save();
+
+    return res.status(201).json(new ApiResponce(200, "User created", checkUser));
 });
+
+
 
 
 export { registerUser, loginUser };
