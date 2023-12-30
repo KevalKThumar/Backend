@@ -43,10 +43,13 @@ app.use(cookieParser())
 app.get('/', (req, res) => { res.send('hello world') })
 app.use('/api/v1/users',userRouter)
 
-
-
 export { app }
 
+
+
+// refresh token :- refresh token is used to get new access token when old access token is expired based on refresh token match with database's refresh token.
+
+// authentication tocken :- it is used to authenticate user when user is logged in.
 
 
 

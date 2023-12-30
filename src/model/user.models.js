@@ -4,8 +4,8 @@
 
 
 import mongoose from 'mongoose';
-import Jwt from 'jsonwebtoken';
-import bcryptjs from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 const userSchema = new mongoose.Schema(
     {
         username: {
@@ -65,26 +65,24 @@ const userSchema = new mongoose.Schema(
 // in this callback function dont use arrow function as it will not work because this keyword is not available in arrow function.
 
 // mogoose middleware for hashing password
-userSchema.pre('save', async function (next) {
-    if (this.isModified('password')) return
-    {
-        this.password = await bcryptjs.hash(this.password, 10);
-        next();
-    }
-    next();
+userSchema.pre("save", async function (next) {
+    if(!this.isModified("password")) return next();
+
+    this.password = await bcrypt.hash(this.password, 10)
+    next()
 })
 
-userSchema.methods.isPasswordCorrect = async function (password) {
-    return await bcryptjs.compare(password, this.password)
+userSchema.methods.isPasswordCorrect = async function(password){
+    return await bcrypt.compare(password, this.password)
 }
 
 userSchema.methods.createJWT = function () {
-    return Jwt.sign(
+    return jwt.sign(
         {
             _id: this._id,
-            username: this.username,
             email: this.email,
-            fullname: this.fullname
+            username: this.username,
+            fullName: this.fullName
         },
         process.env.ACCESS_TOKEN_SECRET,
         {
@@ -94,15 +92,17 @@ userSchema.methods.createJWT = function () {
 }
 
 userSchema.methods.createRefreshJWT = function () {
-    return Jwt.sign(
+    return jwt.sign(
         {
-            _id: this._id
+            _id: this._id,
+
         },
-        process.env.REFRESH_TOKEN_SECRET,
+        process.env.REFERESH_TOKEN_SECRET,
         {
-            expiresIn: process.env.REFRESH_TOKEN_EXPIRY
+            expiresIn: process.env.REFERESH_TOKEN_EXPIRY
         }
     )
 }
+
 
 export const User = mongoose.model('User', userSchema)
