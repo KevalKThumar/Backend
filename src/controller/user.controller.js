@@ -112,7 +112,7 @@ const loginUser = asyncHandler(async (req, res) => {
      * step 7: send the response in catch part
      */
 
-   
+
 
 
     const { email, username, password } = req.body;
@@ -251,4 +251,219 @@ const refreshAccessTocken = asyncHandler(async (req, res) => {
 
 })
 
-export { registerUser, loginUser, logoutUser, refreshAccessTocken };
+const changeCurrentPassword = asyncHandler(async (res, req) => {
+    /**!SECTION
+     * step 1: get the old password and new password from the request body and store it in a variable
+     * step 2: check if data is not empty
+     * setp 3: we add middleware for check user is logged in or not if yes then ot return user in req.user
+     * setp 4: get user's id from req.user
+     * setp 5: find user by id
+     * setp 6: check if user is not found this step is not required becuse we are using middleware for check user is logged in or not
+     * setp 7: check if oldpassword is correct 
+     * setp 8: update password
+     * setp 9: save the user
+     * setp 10: send the response
+     * setp 11: catch the error
+     */
+    try {
+
+        const { oldPassword, newPassword } = req.body;
+        const user = await User.findById(req.user?._id);
+
+        const isPasswordCorreact = await user.isPasswordCorrect(oldPassword);
+
+        if (!isPasswordCorreact) {
+            throw new ApiError(400, {}, "Old password is not correct");
+        }
+
+        user.password = newPassword;
+
+        await user.save({
+            validateBeforeSave: false
+        });
+
+        return res.status(200).json(new ApiResponce(200, user, "Password changed successfully"));
+
+    } catch (error) {
+        throw new ApiError(500, error?.message || "Somthing went wrong while changing current password");
+    }
+})
+
+const getCutrrentUser = asyncHandler(async (req, res) => {
+    /**!SECTION
+     * step 1: get the user's id from the request.user because we are using middleware for check user is logged in or not
+     * step 2: find user by id
+     * step 3: send the response
+     * step 4: catch the error
+     */
+
+    try {
+        return res.status(200).json(new ApiResponce(200, req.user, "User found successfully"))
+    } catch (error) {
+        throw new ApiError(500, error?.message || "Somthing went wrong while getting current user");
+    }
+})
+
+const updateUserDetailsText = asyncHandler(async (req, res) => {
+    /**!SECTION
+     * step 1: get the user's id from the request.user because we are using middleware for check user is logged in or not
+     * step 2: find user by id update user
+     * step 3: save the user
+     * step 4: send the response
+     * step 5: catch the error
+     */
+
+    try {
+
+        const { email, fullname } = req.body;
+
+        if ([email, fullname].some((field) => field.trim() === "")) {
+            throw new ApiError(400, "All fields are required");
+        }
+
+        const user = await User.findByIdAndUpdate(
+            req.user?._id,
+            {
+                $set: {
+                    fullname,
+                    email
+                }
+            },
+            {
+                new: true,
+            }
+
+        ).select("-password");
+
+        return res
+            .status(200)
+            .json(
+                new ApiResponce(
+                    200, user, "User details updated successfully"
+                )
+            )
+
+    } catch (error) {
+
+        throw new ApiError(
+            500, error?.message || "Somthing went wrong while updating user details"
+        );
+
+    }
+
+})
+
+const updateUserFileAvatar = asyncHandler(async (req, res) => {
+    /**!SECTION
+     * step 1: get the user's id from the request.user because we are using middleware for check user is logged in or not
+     * step 2: find user by id  update user
+     * step 3: save the user
+     * step 4: send the response
+     * step 5: catch the error
+    */
+
+    try {
+        const localPathOfAvatar = req.file?.path
+
+
+        if (!localPathOfAvatar) {
+            throw new ApiError(500, "Avatar image not found");
+        }
+
+
+        const avatarUrl = await uploadOnCloudinary(localPathOfAvatar);
+
+        if (!avatarUrl.url) {
+            throw new ApiError(500, "Error while uploading avatar image");
+
+        }
+
+
+        const user = await User.findByIdAndUpdate(
+            req.user?._id,
+            {
+                $set: {
+                    avatar: avatarUrl.url
+                }
+            },
+            {
+                new: true,
+            }
+        ).select("-password");
+
+
+        return res
+            .status(200)
+            .json(
+                new ApiResponce(
+                    200, user, "User details updated successfully"
+                )
+            )
+
+
+
+    } catch (error) {
+        throw new ApiError(500, error?.message || "Somthing went wrong while updating user details");
+
+    }
+})
+
+const updateUserFileCorverImage = asyncHandler(async (req, res) => {
+    /**!SECTION
+     * step 1: get the user's id from the request.user because we are using middleware for check user is logged in or not
+     * step 2: find user by id  update user
+     * step 3: save the user
+     * step 4: send the response
+     * step 5: catch the error
+    */
+
+    try {
+        const localPathOfAvatar = req.file?.path
+
+
+        if (!localPathOfAvatar) {
+            throw new ApiError(500, "CorverImage image not found");
+        }
+
+
+        const corverImageUrl = await uploadOnCloudinary(localPathOfCorverImage);
+
+        if (!corverImageUrl.url) {
+            throw new ApiError(500, "Error while uploading CorverImage image");
+
+        }
+
+
+        const user = await User.findByIdAndUpdate(
+            req.user?._id,
+            {
+                $set: {
+                    corverimage: corverImageUrl.url
+                }
+            },
+            {
+                new: true,
+            }
+        ).select("-password");
+
+
+
+        return res
+            .status(200)
+            .json(
+                new ApiResponce(
+                    200, user, "User details updated successfully"
+                )
+            )
+
+
+
+    } catch (error) {
+        throw new ApiError(500, error?.message || "Somthing went wrong while updating user details");
+
+    }
+})
+
+
+
+export { registerUser, loginUser, logoutUser, refreshAccessTocken, changeCurrentPassword, getCutrrentUser, updateUserDetailsText, updateUserFileAvatar, updateUserFileCorverImage };
