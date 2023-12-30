@@ -251,7 +251,7 @@ const refreshAccessTocken = asyncHandler(async (req, res) => {
 
 })
 
-const changeCurrentPassword = asyncHandler(async (res, req) => {
+const changeCurrentPassword = asyncHandler(async (req,res) => {
     /**!SECTION
      * step 1: get the old password and new password from the request body and store it in a variable
      * step 2: check if data is not empty
@@ -266,6 +266,7 @@ const changeCurrentPassword = asyncHandler(async (res, req) => {
      * setp 11: catch the error
      */
     try {
+        console.log(req.body)
 
         const { oldPassword, newPassword } = req.body;
         const user = await User.findById(req.user?._id);
@@ -315,10 +316,16 @@ const updateUserDetailsText = asyncHandler(async (req, res) => {
 
     try {
 
-        const { email, fullname } = req.body;
+        const { email, fullname} = req.body;
 
         if ([email, fullname].some((field) => field.trim() === "")) {
             throw new ApiError(400, "All fields are required");
+        }
+
+        const existingUser = await User.findOne({ email });
+
+        if(existingUser) {
+            throw new ApiError(409, "User already exists with this email try with another email")
         }
 
         const user = await User.findByIdAndUpdate(
@@ -418,10 +425,10 @@ const updateUserFileCorverImage = asyncHandler(async (req, res) => {
     */
 
     try {
-        const localPathOfAvatar = req.file?.path
+        const localPathOfCorverImage = req.file?.path
 
 
-        if (!localPathOfAvatar) {
+        if (!localPathOfCorverImage) {
             throw new ApiError(500, "CorverImage image not found");
         }
 
@@ -438,13 +445,14 @@ const updateUserFileCorverImage = asyncHandler(async (req, res) => {
             req.user?._id,
             {
                 $set: {
-                    corverimage: corverImageUrl.url
+                    coverimage: corverImageUrl.url
                 }
             },
             {
                 new: true,
             }
         ).select("-password");
+       
 
 
 
