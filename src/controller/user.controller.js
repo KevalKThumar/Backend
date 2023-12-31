@@ -473,5 +473,111 @@ const updateUserFileCorverImage = asyncHandler(async (req, res) => {
 })
 
 
+const getUserChannalDetails = asyncHandler(async (req, res) => {
+    try {
 
-export { registerUser, loginUser, logoutUser, refreshAccessTocken, changeCurrentPassword, getCutrrentUser, updateUserDetailsText, updateUserFileAvatar, updateUserFileCorverImage };
+        const { username } = req.params;
+
+        if (!username) {
+            throw new ApiError(400, "username is required");
+        }
+
+      const channal= await User.aggregate([
+
+
+            // find the user using username
+            {
+                $match: {
+                    username: username?.toLowerCase()
+                }
+            },
+
+
+            // get the suscribers of the channel
+            {
+                $lookup: {
+                    from: "subscriptions",  //here Subscription is store in mongodb like "subscriptions" this
+                    localField: "_id",
+                    foreignField: "channels",
+                    as: "subscribers"
+
+                }
+            },
+
+
+            // apne kitno ko subscribe krna hai
+            {
+                $lookup: {
+                    from: "subscriptions",  //here Subscription is store in mongodb like "subscriptions" this
+                    localField: "_id",
+                    foreignField: "subscription",
+                    as: "subscribedTo"
+                }
+            },
+
+
+            // add the count of suscribers and subscribedTo in the user and also add the isSubscribed field in the user
+            {
+                $addFields: {
+                    subscribersCount: {
+                        $size: "$subscribers" //use $ here because it is field
+                    },
+                    channalsSubscribedToCount: {
+                        $size: "$subscribedTo"
+                    },
+                    isSubscribed: {
+                        $cond: {
+                            if: {
+                                $in: [req.user?._id, "$subscribers.subscription"]
+                            },
+                            then: true,
+                            else: false
+                        }
+                    }
+                }
+            },
+
+            // project: user jo demand karta he oo sari item ham nahi dete kuchha selected item hi dete he 
+
+            {
+                $project: {
+                    fullname:1,
+                    username:1,
+                    email:1,
+                    avatar:1,
+                    coverimage:1,
+                    subscribersCount:1,
+                    channalsSubscribedToCount:1,
+                    isSubscribed:1
+
+                }
+            }
+
+
+        ])
+
+
+        if(!channal?.length && channal?.length === 0){
+            throw new ApiError(404, "channal does not exists");
+        }
+
+        return res
+        .status(200)
+        .json(
+            new ApiResponce(
+                200, channal[0], "User details fetched successfully"
+            )
+        )
+
+
+
+
+
+    } catch (error) {
+        throw new ApiError(500, error.message || "Somthing went wrong while updating user details");
+    }
+})
+
+
+
+export { registerUser, loginUser, logoutUser, refreshAccessTocken, changeCurrentPassword, getCutrrentUser, updateUserDetailsText, updateUserFileAvatar, updateUserFileCorverImage, getUserChannalDetails };
