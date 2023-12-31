@@ -1,7 +1,7 @@
 import { User } from "../model/user.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponce } from "../utils/ApiResponce.js";
-import { uploadOnCloudinary } from "../utils/Cloudinary.js";
+import { deleteFileFromCloudinary, uploadOnCloudinary } from "../utils/Cloudinary.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import cookieParser from 'cookie-parser';
 import jwt from 'jsonwebtoken';
@@ -251,7 +251,7 @@ const refreshAccessTocken = asyncHandler(async (req, res) => {
 
 })
 
-const changeCurrentPassword = asyncHandler(async (req,res) => {
+const changeCurrentPassword = asyncHandler(async (req, res) => {
     /**!SECTION
      * step 1: get the old password and new password from the request body and store it in a variable
      * step 2: check if data is not empty
@@ -316,7 +316,7 @@ const updateUserDetailsText = asyncHandler(async (req, res) => {
 
     try {
 
-        const { email, fullname} = req.body;
+        const { email, fullname } = req.body;
 
         if ([email, fullname].some((field) => field.trim() === "")) {
             throw new ApiError(400, "All fields are required");
@@ -324,7 +324,7 @@ const updateUserDetailsText = asyncHandler(async (req, res) => {
 
         const existingUser = await User.findOne({ email });
 
-        if(existingUser) {
+        if (existingUser) {
             throw new ApiError(409, "User already exists with this email try with another email")
         }
 
@@ -385,6 +385,8 @@ const updateUserFileAvatar = asyncHandler(async (req, res) => {
 
         }
 
+        const oldImageUrl = req.user?.avatar;
+
 
         const user = await User.findByIdAndUpdate(
             req.user?._id,
@@ -398,6 +400,7 @@ const updateUserFileAvatar = asyncHandler(async (req, res) => {
             }
         ).select("-password");
 
+        await deleteFileFromCloudinary(oldImageUrl);
 
         return res
             .status(200)
@@ -406,8 +409,6 @@ const updateUserFileAvatar = asyncHandler(async (req, res) => {
                     200, user, "User details updated successfully"
                 )
             )
-
-
 
     } catch (error) {
         throw new ApiError(500, error?.message || "Somthing went wrong while updating user details");
@@ -440,6 +441,7 @@ const updateUserFileCorverImage = asyncHandler(async (req, res) => {
 
         }
 
+        const oldImageUrl = req.user?.coverimage
 
         const user = await User.findByIdAndUpdate(
             req.user?._id,
@@ -452,9 +454,9 @@ const updateUserFileCorverImage = asyncHandler(async (req, res) => {
                 new: true,
             }
         ).select("-password");
-       
 
 
+        await deleteFileFromCloudinary(oldImageUrl);
 
         return res
             .status(200)
@@ -463,8 +465,6 @@ const updateUserFileCorverImage = asyncHandler(async (req, res) => {
                     200, user, "User details updated successfully"
                 )
             )
-
-
 
     } catch (error) {
         throw new ApiError(500, error?.message || "Somthing went wrong while updating user details");
