@@ -33,16 +33,16 @@ const uploadOnCloudinary = async (localFilePath) => {
 
 // delete file from cloudinary server
 
-const deleteFileFromCloudinary = async (imagePathToBeDelete) => {
+const deleteFileFromCloudinary = async (filePathToBeDelete) => {
     try {
-        if (!imagePathToBeDelete) {
-            console.log("imagePathToBeDelete is required");
+        if (!filePathToBeDelete) {
+            console.log("FilePathToBeDelete is required");
             return null;
         }
-        const responce = await cloudinary.uploader.destroy(imagePathToBeDelete);
+        const responce = await cloudinary.uploader.destroy(filePathToBeDelete);
         return responce  
     } catch (error) {
-        throw new Error(error.message)
+        return null 
     }
 }
 

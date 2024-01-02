@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import userRouter from './routes/user.routes.js';
+import videoRouter from './routes/video.routes.js';
 const app = express();
 
 // config cors middleware
@@ -42,6 +43,7 @@ app.use(cookieParser())
 
 app.get('/', (req, res) => { res.send('hello world') })
 app.use('/api/v1/users',userRouter)
+app.use('/api/v1/video',videoRouter)
 
 export { app }
 

@@ -175,8 +175,6 @@ const loginUser = asyncHandler(async (req, res) => {
 
 const logoutUser = asyncHandler(async (req, res) => {
 
-
-
     await User.findByIdAndUpdate(
         req.user._id,
         {
@@ -553,9 +551,7 @@ const getUserChannalDetails = asyncHandler(async (req, res) => {
                 }
             }
 
-
         ])
-
 
         if(!channal?.length && channal?.length === 0){
             throw new ApiError(404, "channal does not exists");
@@ -569,15 +565,97 @@ const getUserChannalDetails = asyncHandler(async (req, res) => {
             )
         )
 
-
-
-
-
     } catch (error) {
         throw new ApiError(500, error.message || "Somthing went wrong while updating user details");
     }
 })
 
 
+const getUsersWatchHistory = asyncHandler(async (req, res) => {
+    try {
 
-export { registerUser, loginUser, logoutUser, refreshAccessTocken, changeCurrentPassword, getCutrrentUser, updateUserDetailsText, updateUserFileAvatar, updateUserFileCorverImage, getUserChannalDetails };
+        // req.user._id  --->>>---  // It is not a user's Id user's id wiil be a Object('String') in this we get only String of this because we use mongooes
+
+        const user = await User.aggregate([
+            {
+                $match: {
+                    _id: new mongoose.Types.ObjectId(req.user._id)  // convert String to ObjectId
+                }
+
+            },
+            {
+                $lookup: {
+                    from: "videos",
+                    localField: "watchHistory",
+                    foreignField: "_id",
+                    as: "watchHistory",
+                    pipeline: [
+                        {
+                            $lookup: {
+                                from: "users",
+                                localField: "owner",
+                                foreignField: "_id",
+                                as: "owner",
+                                pipeline: [
+                                    {
+                                        $project: {
+                                            fullname: 1,
+                                            username: 1,
+                                            avatar: 1
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        // {
+                            // pipeline: [
+                            //     {
+                            //         $project: {
+                            //             fullname: 1,
+                            //             username: 1,
+                            //             avatar: 1
+                            //         }
+                            //     }
+                            // ]
+
+                        // }
+
+                        //  it is only for getting array's first value instead of whole array.
+                        {
+                            $addFields: {
+                                owner: {
+                                    // $arrayElemAt: ["$owner", 0]
+                                    $first: "$owner"
+                                }
+                            }
+                        }
+                    ],
+                }
+            }
+
+        ])
+
+        if(!user?.length && user?.length === 0){
+            throw new ApiError(404, "user's watch history does not exists");
+        }
+
+        return res
+        .status(200)
+        .json(
+            new ApiResponce(
+                200, user[0].watchHistory , "User watch history fetched successfully"
+            )
+        )
+
+
+
+    } catch (error) {
+
+        throw new ApiError(500, error.message || "Somthing went wrong while getting user watch history");
+
+    }
+})
+
+
+
+export { registerUser, loginUser, logoutUser, refreshAccessTocken, changeCurrentPassword, getCutrrentUser, updateUserDetailsText, updateUserFileAvatar, updateUserFileCorverImage, getUserChannalDetails, getUsersWatchHistory };

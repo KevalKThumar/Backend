@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { changeCurrentPassword, getCutrrentUser, getUserChannalDetails, loginUser, logoutUser, refreshAccessTocken, registerUser, updateUserDetailsText, updateUserFileAvatar, updateUserFileCorverImage } from "../controller/user.controller.js";
+import { changeCurrentPassword, getCutrrentUser, getUserChannalDetails, getUsersWatchHistory, loginUser, logoutUser, refreshAccessTocken, registerUser, updateUserDetailsText, updateUserFileAvatar, updateUserFileCorverImage } from "../controller/user.controller.js";
 import { upload } from "../middlewares/multer.middlewares.js";
 import { verifyToken } from "../middlewares/auth.middlewares.js";
 
@@ -35,13 +35,15 @@ router.route('/change-password').post(verifyToken, changeCurrentPassword)
 router.route('/get-user').get(verifyToken, getCutrrentUser)
 
 
-router.route('/update/text-details').post(verifyToken, updateUserDetailsText)
+router.route('/update/text-details').patch(verifyToken, updateUserDetailsText)
 
-router.route('/update/file-details/avatar').post(verifyToken,upload.single('avatar'),updateUserFileAvatar)
+router.route('/update/file-details/avatar').patch(verifyToken,upload.single('avatar'),updateUserFileAvatar)
 
-router.route('/update/file-details/coverimage').post(verifyToken,upload.single('coverimage'),updateUserFileCorverImage)
+router.route('/update/file-details/coverimage').patch(verifyToken,upload.single('coverimage'),updateUserFileCorverImage)
 
-router.route('/get-user/:username').get(verifyToken, getUserChannalDetails)
+router.route('/get-channel/:username').get(verifyToken, getUserChannalDetails)
+
+router.route('/history').get(verifyToken,getUsersWatchHistory)
 
 
 
