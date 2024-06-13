@@ -1,60 +1,26 @@
-import express from 'express';
-import cors from 'cors';
-import cookieParser from 'cookie-parser';
-import userRouter from './routes/user.routes.js';
-import videoRouter from './routes/video.routes.js';
-const app = express();
+import express from "express"
+import cors from "cors"
+import cookieParser from "cookie-parser"
 
-// config cors middleware
-app.use(cors(
-    {
-        origin: process.env.FRONTEND_URL,
-        credentials: true
-    }
-));
+const app = express()
 
-// config json middleware
-// aa etle use thay ke json middleware ma limited data ave
-app.use(express.json(
-    {
-        limit: '16kb'
-    }
-));
+app.use(cors({
+    origin: process.env.CORS_ORIGIN,
+    credentials: true
+}))
 
-// config url encoded middleware
-app.use(express.urlencoded(
-    {
-        extended: true,
-        limit: '16kb'
-    }
-));
-
-// config static file
-app.use(express.static(
-    'public'
-))
-
-// config cookie parser middleware
+app.use(express.json({ limit: "16kb" }))
+app.use(express.urlencoded({ extended: true, limit: "16kb" }))
+app.use(express.static("public"))
 app.use(cookieParser())
 
 
-
-// router
-
-app.get('/', (req, res) => { res.send('hello world') })
-app.use('/api/v1/users',userRouter)
-app.use('/api/v1/video',videoRouter)
+//routes import
+import videoRouter from "./routes/video.routes.js"
+import userRouter from './routes/user.routes.js'
+//routes declaration
+app.use("/api/v1/users", userRouter)
+app.use("/api/v1/videos", videoRouter)
+// http://localhost:8000/api/v1/users/register
 
 export { app }
-
-
-
-// refresh token :- refresh token is used to get new access token when old access token is expired based on refresh token match with database's refresh token.
-
-// authentication tocken :- it is used to authenticate user when user is logged in.
-
-
-
-// url : uniform resource locator
-// uri : uniform resource identifier
-// urn : uniform resource name

@@ -4,7 +4,6 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponce } from "../utils/ApiResponce.js";
 import { deleteFileFromCloudinary, uploadOnCloudinary } from "../utils/Cloudinary.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import cookieParser from 'cookie-parser';
 import jwt from 'jsonwebtoken';
 
 const registerUser = asyncHandler(async (req, res) => {

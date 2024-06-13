@@ -3,12 +3,13 @@ import { Router } from "express";
 
 import { upload } from "../middlewares/multer.middlewares.js";
 import { verifyToken } from "../middlewares/auth.middlewares.js";
-import { changeIsPublished, deleteVideo, getChannalsVideo, increseViewCount, updateThumbnail, updateTitleAndDescription, uplodedVideo } from "../controller/video.controller.js";
+import { changeIsPublished, deleteVideo, getChannalsVideo, getMyChannalsVideo, increseViewCount, updateThumbnail, updateTitleAndDescription, uplodedVideo } from "../controller/video.controller.js";
 
 
 const router = Router();
 
-router.route('/channel/:username').get(getChannalsVideo)
+router.route('/get-channel/:username').get(getChannalsVideo)
+router.route('/mychannel/:username').get(verifyToken, getMyChannalsVideo)
 
 router.route('/delete/:id').delete(verifyToken, deleteVideo)
 

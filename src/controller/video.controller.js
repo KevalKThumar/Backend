@@ -64,7 +64,9 @@ const uplodedVideo = asyncHandler(async (req, res) => {
 
         res
             .status(201)
-            .json(new ApiResponce(200, newVideo, "Video uploaded successfully"));
+            .json(
+                new ApiResponce(200, newVideo, "Video uploaded successfully")
+            );
     } catch (error) {
         throw new ApiError(
             500,
@@ -101,12 +103,63 @@ const getChannalsVideo = asyncHandler(async (req, res) => {
                     createdAt: 1,
                 },
             },
-            {
+            {   
                 $sort: {
                     createdAt: -1,
                 },
             },
         ]);
+
+
+
+        if (!videos) {
+            throw new ApiError(404, "Videos not found");
+        }
+
+        res
+            .status(200)
+            .json(new ApiResponce(200, videos, "Videos are fetched successfully"));
+    } catch (error) {
+        throw new ApiError(500, error.message || "Error while fetching videos");
+
+    }
+});
+const getMyChannalsVideo = asyncHandler(async (req, res) => {
+    const { username } = req.User;
+
+    try {
+        const userId = await User.findOne({ username }).select("_id");
+
+        if (!userId) {
+            throw new ApiError(404, "User not found");
+        }
+
+        const videos = await Video.aggregate([
+            {
+                $match: {
+                    owner: new mongoose.Types.ObjectId(userId),
+                    isPublished: true,
+                },
+            },
+            {
+                $project: {
+                    title: 1,
+                    description: 1,
+                    thumbnail: 1,
+                    videoFile: 1,
+                    duration: 1,
+                    views: 1,
+                    createdAt: 1,
+                },
+            },
+            {   
+                $sort: {
+                    createdAt: -1,
+                },
+            },
+        ]);
+
+
 
         if (!videos) {
             throw new ApiError(404, "Videos not found");
@@ -269,6 +322,8 @@ const increseViewCount = asyncHandler(async (req, res) => {
             throw new ApiError(500, "Error while updating video");
         }
 
+        console.log(updatedVideo)
+
         res
             .status(200)
             .json(new ApiResponce(200, updatedVideo, "Video viewed count updated successfully"));
@@ -314,4 +369,4 @@ const changeIsPublished = asyncHandler(async (req, res) => {
 
 
 
-export { uplodedVideo, getChannalsVideo, deleteVideo, updateTitleAndDescription, updateThumbnail, increseViewCount, changeIsPublished };
+export { uplodedVideo, getChannalsVideo, deleteVideo, updateTitleAndDescription, updateThumbnail, increseViewCount, changeIsPublished, getMyChannalsVideo };
