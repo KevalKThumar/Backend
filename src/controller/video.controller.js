@@ -47,6 +47,10 @@ const uplodedVideo = asyncHandler(async (req, res) => {
         const thumbnail = await uploadOnCloudinary(thumbnailLocalPath);
         const video = await uploadOnCloudinary(videoLocalPath);
 
+        if(!(video || thumbnail)){
+            throw new ApiError(400, "Error while uploading video on Cloudinary");
+        }
+
         const newVideo = await Video.create({
             title,
             description,
